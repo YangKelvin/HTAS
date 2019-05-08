@@ -31,6 +31,15 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual('Sat Apr  6 22:57:09 2019', json_data['date'])
         self.assertEqual('5', str(json_data['message_count']['all']))
 
+    def test_store(self):
+        self.link = 'https://www.ptt.cc/bbs/Gossiping/M.1554562631.A.37E.html'
+        self.board = 'Gossiping'
+        self.article_id = 'M.1557332400.A.08C'
+
+        crawler_data = crawler.parse(self.link, self.article_id, self.board)
+
+        self.file_name  = 'filename.json'
+        crawler.store(self.file_name, crawler_data, 'w')
 
 if __name__ == '__main__':
     unittest.main()

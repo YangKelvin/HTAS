@@ -3,7 +3,7 @@ import json
 from bs4 import BeautifulSoup
 import re
 from six import u
-
+import codecs
 
 class PttWebCrawler():
     PTT_URL = 'https://www.ptt.cc'
@@ -124,3 +124,8 @@ class PttWebCrawler():
             'messages': messages
         }
         return json.dumps(json_data, sort_keys=True, ensure_ascii=False)
+
+    @staticmethod
+    def store(filename, data, mode):
+        with codecs.open(filename, mode, encoding='utf-8') as f:
+            f.write(data)
