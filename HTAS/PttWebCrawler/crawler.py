@@ -56,6 +56,7 @@ class PttWebCrawler():
         # resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
         resp = requests.get(url=link, cookies={'over18': '1'}, timeout=timeout)
         # print('status code: %d' % (resp.status_code))
+        print('Processing article:', article_id)
         if (resp.status_code != 200):
             print('invalid url:', resp.url)
             return json.dumps({"error": "invalid url"}, sort_keys=True, ensure_ascii=False)
