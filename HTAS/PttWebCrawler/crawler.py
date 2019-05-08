@@ -1,0 +1,2 @@
+class PttWebCrawler():
+    print('a')
