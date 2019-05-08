@@ -4,12 +4,52 @@ from bs4 import BeautifulSoup
 import re
 from six import u
 import codecs
+import os
+import sys
+import time
+
+VERIFY = True
+if sys.version_info[0] < 3:
+    VERIFY = False
+    requests.packages.urllib3.disable_warnings()
 
 class PttWebCrawler():
     PTT_URL = 'https://www.ptt.cc'
 
-    def __init__():
+    def __init__(self):
         pass
+
+    def parse_articles(self, start, end, board, path='.', timeout=3):
+        filename = board + '-' + str(start) + '-' + str(end) + '.json'
+        filename = os.path.join(path, filename)
+        self.store(filename, u'{"articles": [', 'w')
+        for i in range(end-start+1):
+            index = start + i
+            print('Processing index:', str(index))
+            resp = requests.get(
+                url = self.PTT_URL + '/bbs/' + board + '/index' + str(index) + '.html',
+                cookies={'over18': '1'}, verify=VERIFY, timeout=timeout
+            )
+            if resp.status_code != 200:
+                print('invalid url:', resp.url)
+                continue
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            divs = soup.find_all("div", "r-ent")
+            for div in divs:
+                try:
+                    # ex. link would be <a href="/bbs/PublicServan/M.1127742013.A.240.html">Re: [問題] 職等</a>
+                    href = div.find('a')['href']
+                    link = self.PTT_URL + href
+                    article_id = re.sub('\.html', '', href.split('/')[-1])
+                    if div == divs[-1] and i == end-start:  # last div of last page
+                        self.store(filename, self.parse(link, article_id, board), 'a')
+                    else:
+                        self.store(filename, self.parse(link, article_id, board) + ',\n', 'a')
+                except:
+                    pass
+            time.sleep(0.1)
+        self.store(filename, u']}', 'a')
+        return filename
 
     @staticmethod
     def parse(link, article_id, board, timeout=3):
@@ -109,7 +149,7 @@ class PttWebCrawler():
         filtered = [x for x in filtered if article_id not in x]
         content = ' '.join(filtered)
         content = re.sub(r'(\s)+', ' ', content)
-        print(content)
+        # print(content)
 
         json_data = {
             'url': link,

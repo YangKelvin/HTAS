@@ -38,8 +38,12 @@ class TestCrawler(unittest.TestCase):
 
         crawler_data = crawler.parse(self.link, self.article_id, self.board)
 
-        self.file_name  = 'filename.json'
+        self.file_name  = './HTAS/test/test_tmp/filename.json'
         crawler.store(self.file_name, crawler_data, 'w')
+
+    def test_parse_articles(self):
+        a = crawler()
+        print('parse_article: %s' %(a.parse_articles(39278, 39278, 'Gossiping')))
 
 if __name__ == '__main__':
     unittest.main()
