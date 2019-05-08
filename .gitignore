@@ -4,3 +4,4 @@ __pycache__/
 test_tmp/
 my_crawler.py
 data/
+instance/
