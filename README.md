@@ -1,7 +1,3 @@
 # 熱門話題分析系統
-[文件](https://hackmd.io/7Sigu55fQ3-RBYggvbU0gg)
 
-## 編譯 ut_ptt_crawler
-``` bash
-python -m HTAS.test.ut_ptt_crawler
-```
+希望能透過 Hot Topic Analysis System (HTAS)，透過 Text Mining 來分析台灣當前的熱門話題，希望能透過這個系統預測未來 2020 總統大選結果。
