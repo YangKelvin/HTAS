@@ -14,10 +14,14 @@ def create_app(test_config=None):
         pass
 
     @app.route('/test')
-    def HTAS():
+    def test():
         return 'Hello World!'
 
     from . import db
     db.init_app(app)
 
+
+    @app.route('/index')
+    def index():
+        return render_template('HTAS.html')
     return app
