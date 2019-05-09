@@ -23,6 +23,17 @@ class TestAnalyzer(unittest.TestCase):
         self.assertEqual('[問卦] 超人何時再起', self.text['articles']
                          [0]['article_title'])
 
+    def test_analysis_article(self):
+        article = self.analyzer.read_ptt_json('HTAS/test/test_tmp/Gossiping-39001-39100.json')
+        article = article['articles'][0]
+        # print(article)
+        title = article['article_title']
+        content = article['content']
+
+        title_cut = self.analyzer.cut(title)
+        print('/'.join(title))
+        # for text in title_cut:
+        #     print('text: %s' % (text))
 
 if __name__ == '__main__':
     unittest.main()
