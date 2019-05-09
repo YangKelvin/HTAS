@@ -13,6 +13,9 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    # use chartkick
+    app.jinja_env.add_extension("chartkick.ext.charts")
+
     @app.route('/test')
     def test():
         return 'Hello World!'
@@ -20,6 +23,8 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
+    from . import visual
+    app.register_blueprint(visual.bp)
 
     @app.route('/index')
     def index():
