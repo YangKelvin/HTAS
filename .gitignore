@@ -1,7 +1,6 @@
 __pycache__/
 .vscode/
 .DS_Store
-test_tmp/
 my_crawler.py
 data/
 instance/
