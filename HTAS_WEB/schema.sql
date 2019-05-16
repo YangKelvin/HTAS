@@ -6,15 +6,11 @@ CREATE TABLE PERMISSION (
     PermissionName VARCHAR(20)
 );
 
-CREATE TABLE ACCOUNT (
-    AccountID INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE User (
+    UserID INTEGER PRIMARY KEY AUTOINCREMENT,
     Account VARCHAR(20),
     Password VARCHAR(20),
     PermissionID INTEGER,
-    UserName VARCHAR(20),
-    IdentificationNumber VARCHAR(20),
-    Gender VARCHAR(2),
-    CellphoneNumber VARCHAR(10),
     Email VARCHAR(50),
     FOREIGN KEY(PermissionID) REFERENCES PERMISSION(PermissionID)
 );
