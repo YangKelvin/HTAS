@@ -15,3 +15,5 @@ CREATE TABLE USER (
     FOREIGN KEY(PermissionID) REFERENCES PERMISSION(PermissionID)
 );
 
+INSERT INTO PERMISSION (PermissionName) VALUES ('Admin');
+INSERT INTO PERMISSION (PermissionName) VALUES ('Normal');
