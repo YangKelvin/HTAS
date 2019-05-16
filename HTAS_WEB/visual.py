@@ -5,7 +5,7 @@ from werkzeug.exceptions import abort
 
 # from flaskr.auth import login_required
 from HTAS_WEB.db import get_db
-from bokeh.plotting import figure, output_file, show
+# from bokeh.plotting import figure, output_file, show
 import chartkick
 
 bp = Blueprint('visual', __name__, url_prefix='/visual')
