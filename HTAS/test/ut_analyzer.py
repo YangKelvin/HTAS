@@ -35,5 +35,10 @@ class TestAnalyzer(unittest.TestCase):
         # for text in title_cut:
         #     print('text: %s' % (text))
 
+    def test_add_word_test(self):
+        sentence = '人渣文本好好看喔'
+        title_cut = self.analyzer.cut(sentence)
+        for text in title_cut:
+            print('text: %s' % (text))
 if __name__ == '__main__':
     unittest.main()

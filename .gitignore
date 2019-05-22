@@ -4,3 +4,4 @@ __pycache__/
 my_crawler.py
 data/
 instance/
+dict.txt.big
