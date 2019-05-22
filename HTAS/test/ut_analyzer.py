@@ -24,7 +24,8 @@ class TestAnalyzer(unittest.TestCase):
                          [0]['article_title'])
 
     def test_analysis_article(self):
-        article = self.analyzer.read_ptt_json('HTAS/test/test_tmp/Gossiping-39001-39100.json')
+        article = self.analyzer.read_ptt_json(
+            'HTAS/test/test_tmp/Gossiping-39001-39100.json')
         article = article['articles'][0]
         # print(article)
         title = article['article_title']
@@ -40,5 +41,13 @@ class TestAnalyzer(unittest.TestCase):
         title_cut = self.analyzer.cut(sentence)
         for text in title_cut:
             print('text: %s' % (text))
+
+
+    def test_analysis_articles(self):
+        data = self.analyzer.read_ptt_json('HTAS/test/test_tmp/Gossiping-39001-39100.json')
+        tmp_df, tmp_title, tmp_contents, tmp_total_lens = self.analyzer.analysis_articles(data)
+        print(tmp_df)
+
+
 if __name__ == '__main__':
     unittest.main()
