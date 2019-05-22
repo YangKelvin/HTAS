@@ -153,16 +153,15 @@ class PttWebCrawler():
         # print(content)
 
         json_data = {
-            'url': link,
-            'board': board,
             'article_id': article_id,
             'article_title': title,
             'author': author,
             'date': date,
             'content': content,
-            # 'ip': ip,
             'message_count': message_count,
-            'messages': messages
+            'messages': messages,
+            'url': link,
+            'board': board
         }
         return json.dumps(json_data, sort_keys=True, ensure_ascii=False)
 
