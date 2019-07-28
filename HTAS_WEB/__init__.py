@@ -45,6 +45,5 @@ def create_app(test_config=None):
         )
 
         return redirect(url_for('index'))
+        
     return app
-
-    
