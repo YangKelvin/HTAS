@@ -7,6 +7,7 @@ import codecs
 import os
 import sys
 import time
+from datetime import datetime
 
 VERIFY = True
 if sys.version_info[0] < 3:
@@ -20,6 +21,7 @@ class PttWebCrawler():
         pass
 
     def parse_articles(self, start, end, board, path='.', timeout=3):
+        print('parse articles')
         filename = board + '-' + str(start) + '-' + str(end) + '.json'
         filename = os.path.join(path, filename)
         self.store(filename, u'{"articles": [', 'w')
@@ -50,6 +52,27 @@ class PttWebCrawler():
             time.sleep(0.1)
         self.store(filename, u']}', 'a')
         return filename
+
+    def parse_articles_by_date(self, target_day, board, path='.', timeout=3):
+        # 取得看板的 index
+        url_index = self.PTT_URL + '/bbs/' + board + '/index.html'
+
+        # 設定 filename
+        filename = board + '(' + str(target_day) + ').json'
+        # print('filename: %s' % filename)
+
+        resp = requests.get(
+            url = url_index,
+            cookies={'over18': '1'}, verify=VERIFY, timeout=3
+        )
+
+        # 取得八卦版的最新頁數
+        top_page = self.get_top_page(url_index, resp)
+        # print('top_page: %s' % top_page)
+        
+        # 更新 url
+        url_index = self.PTT_URL + '/bbs/' + board + '/index'+ str(top_page) + '.html'
+        # print('url_index: %s' % url_index)
 
     @staticmethod
     def parse(link, article_id, board, timeout=3):
@@ -169,3 +192,48 @@ class PttWebCrawler():
     def store(filename, data, mode):
         with codecs.open(filename, mode, encoding='utf-8') as f:
             f.write(data)
+
+    @staticmethod
+    def get_top_page(url_index, resp):
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # action-bar 的五顆按鈕
+        # 其中第三顆為 '上一頁'
+        btns = soup.select('div.btn-group > a')
+        # print(btns[3])
+
+        # 取得上一頁按鈕的 href
+        up_page_href = btns[3]['href']
+        # print(up_page_href)
+
+        # 取得 top_page
+        top_page = up_page_href.split('/')[3]   # 取得 index頁數.html
+        top_page = top_page.split('.')[0]       # 取得 index頁數
+        top_page = top_page[5:]                 # 取得 頁數（此為上一頁頁數
+        top_page = int(top_page) + 1            # 取得最新的頁數
+        # print(top_page)
+
+        return top_page
+    
+    @staticmethod
+    def get_article_date(link, timeout):
+
+        resp = requests.get(url=link, cookies={'over18': '1'}, timeout=timeout)
+        if (resp.status_code != 200):
+            return 'invalid url'
+        
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        main_content = soup.find(id="main-content")
+        metas = main_content.select('div.article-metaline')
+        date = metas[2].select('span.article-meta-value')[0].string
+        # print(date)
+
+        return date
+
+    @staticmethod
+    def convert_date(origin_datetime):
+        result = datetime.strptime(origin_datetime, '%a %b %d %H:%M:%S %Y')
+        result = str(result)[:10]
+        # print(result)
+
+        return result
