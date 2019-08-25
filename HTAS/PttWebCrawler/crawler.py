@@ -85,8 +85,17 @@ class PttWebCrawler():
         print('parse articles')
         self.store(filename, u'{"articles": [', 'w')
         resp = ''
+
+        is_last_page = False    # 判斷是否為最後一頁
         for i in range(end_page - start_page + 1):
             index = start_page + i
+            page_count = end_page - start_page
+            # print(i)
+            # print(page_count)
+            if (i == page_count):
+                print('last page')
+                is_last_page = True
+
             print('Processing index:', str(index))
             try:
                 resp = requests.get(
@@ -96,18 +105,33 @@ class PttWebCrawler():
             except:
                 Exception('timeout over')
                 continue
+
             if resp.status_code != 200:
                 print('invalid url:', resp.url)
                 continue
+
             soup = BeautifulSoup(resp.text, 'html.parser')
             divs = soup.find_all("div", "r-ent")
+
+            # 處理 divs，移除不符合目標日期的文章
+            divs_index = 0
+            for i in range(len(divs)):
+                # print('round %s' % i)
+                is_we_want = self.is_we_want_article(divs[divs_index], target_day)
+                if(is_we_want != True):
+                    del divs[divs_index]
+                    continue
+                divs_index = divs_index + 1
+            # print(len(divs))
+
             for div in divs:
                 try:
                     # ex. link would be <a href="/bbs/PublicServan/M.1127742013.A.240.html">Re: [問題] 職等</a>
                     href = div.find('a')['href']
                     link = self.PTT_URL + href
                     article_id = re.sub('\.html', '', href.split('/')[-1])
-                    if (div == divs[-1] and i == end_page - start_page):  # last div of last page
+
+                    if (div == divs[len(divs)-1] and is_last_page):     # 是否為最後一頁的最後一個 div
                         self.store(filename, self.parse(link, article_id, board), 'a')
                     else:
                         self.store(filename, self.parse(link, article_id, board) + ',\n', 'a')
@@ -115,7 +139,6 @@ class PttWebCrawler():
                     pass
             time.sleep(0.1)
         self.store(filename, u']}', 'a')
-        return filename
 
     @staticmethod
     def parse(link, article_id, board, timeout=3):
@@ -330,3 +353,10 @@ class PttWebCrawler():
             page = page - 1
         
         return page, end_page
+
+    @staticmethod
+    def is_we_want_article(div, target_day):
+        # print(div)
+        current_article_date = div.find_all('div', 'date')[0].text.strip()
+        current_article_date = datetime.strptime(current_article_date, '%m/%d')
+        return (current_article_date.month == target_day.month and current_article_date.day == target_day.day)
