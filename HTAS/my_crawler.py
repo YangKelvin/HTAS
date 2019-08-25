@@ -1,6 +1,10 @@
 import datetime
 from PttWebCrawler.crawler import PttWebCrawler as ptt_crawler
 
+# 設定看板
+BOARD = 'PC_Shopping'
+# BOARD = 'Gossiping'
+
 print('start my crawler...\n')
 
 # 取得當前日期
@@ -16,4 +20,4 @@ print('爬取日期: %s' % CRAWLER_DAY)
 my_ptt_crawler = ptt_crawler()
 
 # 爬起來
-my_ptt_crawler.parse_articles_by_date(CRAWLER_DAY, 'Gossiping')
+my_ptt_crawler.parse_articles_by_date(CRAWLER_DAY, BOARD)

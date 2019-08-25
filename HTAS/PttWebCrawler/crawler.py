@@ -76,9 +76,11 @@ class PttWebCrawler():
 
         # 取得那一日第一篇文章的頁數
         # top_page = 38540
-        start_page = self.find_start_day(self.PTT_URL, board, top_page, timeout, target_day)
+        start_page, end_page = self.find_start_day(self.PTT_URL, board, top_page, timeout, target_day)
         print('start page: %s' % start_page)
-        return
+        print('end page: %s' % end_page)
+        
+        
 
     @staticmethod
     def parse(link, article_id, board, timeout=3):
@@ -247,17 +249,22 @@ class PttWebCrawler():
     @staticmethod
     def find_start_day(ptt_url, board, start_page, timeout, target_day):
         page = start_page   # 當前頁數
+        end_page = 0        # 目標天數的最後一頁
         status = 0          # 0: 初始值 1: 為當天日期 2: 當天日期變成不是當天日期
-
+        
         while(True):
-            print('Processing page:', str(start_page))
+            print('Processing page:', str(page))
 
             # 取得 那一頁的 response
-            page_url = ptt_url + '/bbs/' + board + '/index' + str(start_page) + '.html'
-            current_page_resp = requests.get(
-                url = page_url,
-                cookies={'over18': '1'}, verify=VERIFY, timeout=timeout
-            )
+            try:
+                page_url = ptt_url + '/bbs/' + board + '/index' + str(page) + '.html'
+                current_page_resp = requests.get(
+                    url = page_url,
+                    cookies={'over18': '1'}, verify=VERIFY, timeout=timeout
+                )
+            except:
+                throw('timeout over')
+                continue
 
             # 是否找到該網頁
             if (current_page_resp.status_code != 200):
@@ -266,30 +273,25 @@ class PttWebCrawler():
 
             soup = BeautifulSoup(current_page_resp.text, 'html.parser')
             divs = soup.find_all("div", "r-ent")
+            current_article_date = divs[0].find_all('div', 'date')[0].text.strip()
+            current_article_date = datetime.strptime(current_article_date, '%m/%d')
+            # print(current_article_date)
 
-            # 取得那一頁的所有文章
-            for div in divs:
-                # 取得文章日期 (此處爬到的只有月份和日期)
-                current_article_date = div.find_all('div', 'date')[0].text.strip()
-                current_article_date = datetime.strptime(current_article_date, '%m/%d')
-                # print(current_article_date)
-                # print(current_article_date.month == target_day.month)
-                # print(current_article_date.day == target_day.day)
-                # print('-------')
-
-                if(current_article_date.month == target_day.month and current_article_date.day == target_day.day):
-                    # 同一天
-                    if(status == 0):
-                        status = 1
-                elif(current_article_date.month != target_day.month or current_article_date.day != target_day.day):
-                    # 不同天
-                    if(status == 1):
-                        status = 2
-                        break    
+            if(current_article_date.month == target_day.month and current_article_date.day == target_day.day):
+                # 同一天
+                if(status == 0):
+                    status = 1
+                    end_page = page
+            elif(current_article_date.month != target_day.month or current_article_date.day != target_day.day):
+                # 不同天
+                if(status == 1):
+                    status = 2
+                    break  
 
             # 找到前一天日期時跳出 while 迴圈
+            print(status)
             if (status == 2):
                 break
-            start_page = start_page - 1
+            page = page - 1
         
-        return start_page
+        return page, end_page
