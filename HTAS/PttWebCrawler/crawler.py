@@ -87,6 +87,8 @@ class PttWebCrawler():
         resp = ''
 
         is_last_page = False    # 判斷是否為最後一頁
+
+        data_index = 0      # 流水號
         for i in range(end_page - start_page + 1):
             index = start_page + i
             page_count = end_page - start_page
@@ -132,16 +134,17 @@ class PttWebCrawler():
                     article_id = re.sub('\.html', '', href.split('/')[-1])
 
                     if (div == divs[len(divs)-1] and is_last_page):     # 是否為最後一頁的最後一個 div
-                        self.store(filename, self.parse(link, article_id, board), 'a')
+                        self.store(filename, self.parse(link, article_id, board, data_index), 'a')
                     else:
-                        self.store(filename, self.parse(link, article_id, board) + ',\n', 'a')
+                        self.store(filename, self.parse(link, article_id, board, data_index) + ',\n', 'a')
+                    data_index = data_index + 1
                 except:
                     pass
             time.sleep(0.1)
         self.store(filename, u']}', 'a')
 
     @staticmethod
-    def parse(link, article_id, board, timeout=3):
+    def parse(link, article_id, board, data_index, timeout=3):
         # resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
         resp = requests.get(url=link, cookies={'over18': '1'}, timeout=timeout)
         # print('status code: %d' % (resp.status_code))
@@ -166,6 +169,8 @@ class PttWebCrawler():
             author = metas[0].select('span.article-meta-value')[0].string
             title = metas[1].select('span.article-meta-value')[0].string
             date = metas[2].select('span.article-meta-value')[0].string
+            date = datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
+            date = str(date.year) + '-' + str(date.month) + '-' + str(date.day)
             # print('author: %s \ntitle: %s \ndate: %s' % (author, title, date))
 
             # remove meta nodes (?)
@@ -242,7 +247,7 @@ class PttWebCrawler():
         # print(content)
 
         json_data = {
-            'article_id': article_id,
+            'article_id': board + '(' + date + ')_' + str(data_index),
             'article_title': title,
             'author': author,
             'date': date,
