@@ -1,7 +1,7 @@
 __pycache__/
 .vscode/
 .DS_Store
-my_crawler.py
+# my_crawler.py
 data/
 instance/
 dict.txt.big
