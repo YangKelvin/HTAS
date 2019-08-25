@@ -59,6 +59,7 @@ class PttWebCrawler():
 
         # 設定 filename
         filename = board + '(' + str(target_day) + ').json'
+        filename = os.path.join(path, filename)
         # print('filename: %s' % filename)
 
         resp = requests.get(
@@ -80,7 +81,41 @@ class PttWebCrawler():
         print('start page: %s' % start_page)
         print('end page: %s' % end_page)
         
-        
+        # 爬起來
+        print('parse articles')
+        self.store(filename, u'{"articles": [', 'w')
+        resp = ''
+        for i in range(end_page - start_page + 1):
+            index = start_page + i
+            print('Processing index:', str(index))
+            try:
+                resp = requests.get(
+                    url = self.PTT_URL + '/bbs/' + board + '/index' + str(index) + '.html',
+                    cookies={'over18': '1'}, verify=VERIFY, timeout=timeout
+                )
+            except:
+                Exception('timeout over')
+                continue
+            if resp.status_code != 200:
+                print('invalid url:', resp.url)
+                continue
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            divs = soup.find_all("div", "r-ent")
+            for div in divs:
+                try:
+                    # ex. link would be <a href="/bbs/PublicServan/M.1127742013.A.240.html">Re: [問題] 職等</a>
+                    href = div.find('a')['href']
+                    link = self.PTT_URL + href
+                    article_id = re.sub('\.html', '', href.split('/')[-1])
+                    if (div == divs[-1] and i == end_page - start_page):  # last div of last page
+                        self.store(filename, self.parse(link, article_id, board), 'a')
+                    else:
+                        self.store(filename, self.parse(link, article_id, board) + ',\n', 'a')
+                except:
+                    pass
+            time.sleep(0.1)
+        self.store(filename, u']}', 'a')
+        return filename
 
     @staticmethod
     def parse(link, article_id, board, timeout=3):
@@ -263,7 +298,7 @@ class PttWebCrawler():
                     cookies={'over18': '1'}, verify=VERIFY, timeout=timeout
                 )
             except:
-                throw('timeout over')
+                Exception('timeout over')
                 continue
 
             # 是否找到該網頁
