@@ -74,6 +74,12 @@ class PttWebCrawler():
         url_index = self.PTT_URL + '/bbs/' + board + '/index'+ str(top_page) + '.html'
         # print('url_index: %s' % url_index)
 
+        # 取得那一日第一篇文章的頁數
+        # top_page = 38540
+        start_page = self.find_start_day(self.PTT_URL, board, top_page, timeout, target_day)
+        print('start page: %s' % start_page)
+        return
+
     @staticmethod
     def parse(link, article_id, board, timeout=3):
         # resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
@@ -237,3 +243,53 @@ class PttWebCrawler():
         # print(result)
 
         return result
+
+    @staticmethod
+    def find_start_day(ptt_url, board, start_page, timeout, target_day):
+        page = start_page   # 當前頁數
+        status = 0          # 0: 初始值 1: 為當天日期 2: 當天日期變成不是當天日期
+
+        while(True):
+            print('Processing page:', str(start_page))
+
+            # 取得 那一頁的 response
+            page_url = ptt_url + '/bbs/' + board + '/index' + str(start_page) + '.html'
+            current_page_resp = requests.get(
+                url = page_url,
+                cookies={'over18': '1'}, verify=VERIFY, timeout=timeout
+            )
+
+            # 是否找到該網頁
+            if (current_page_resp.status_code != 200):
+                print('invalid url:', current_page_resp.url)
+                continue
+
+            soup = BeautifulSoup(current_page_resp.text, 'html.parser')
+            divs = soup.find_all("div", "r-ent")
+
+            # 取得那一頁的所有文章
+            for div in divs:
+                # 取得文章日期 (此處爬到的只有月份和日期)
+                current_article_date = div.find_all('div', 'date')[0].text.strip()
+                current_article_date = datetime.strptime(current_article_date, '%m/%d')
+                # print(current_article_date)
+                # print(current_article_date.month == target_day.month)
+                # print(current_article_date.day == target_day.day)
+                # print('-------')
+
+                if(current_article_date.month == target_day.month and current_article_date.day == target_day.day):
+                    # 同一天
+                    if(status == 0):
+                        status = 1
+                elif(current_article_date.month != target_day.month or current_article_date.day != target_day.day):
+                    # 不同天
+                    if(status == 1):
+                        status = 2
+                        break    
+
+            # 找到前一天日期時跳出 while 迴圈
+            if (status == 2):
+                break
+            start_page = start_page - 1
+        
+        return start_page

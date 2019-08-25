@@ -16,4 +16,4 @@ print('爬取日期: %s' % CRAWLER_DAY)
 my_ptt_crawler = ptt_crawler()
 
 # 爬起來
-# my_ptt_crawler.parse_articles_by_date(TODAY, 'Gossiping')
+my_ptt_crawler.parse_articles_by_date(CRAWLER_DAY, 'Gossiping')
