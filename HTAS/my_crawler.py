@@ -1,7 +1,19 @@
+import datetime
 from PttWebCrawler.crawler import PttWebCrawler as ptt_crawler
 
-my_ptt_crawler = ptt_crawler()
-# my_ptt_crawler.parse_articles(39279, 39279, 'Gossiping')
+print('start my crawler...\n')
 
-my_ptt_crawler.parse_articles(38773, 38774, 'Gossiping')
-# my_ptt_crawler.parse_articles(39101, 39200, 'Gossiping')
+# 取得當前日期
+TODAY = datetime.date.today()
+# print('Today: %s' % TODAY)
+
+# 取得要爬的日期
+BEFORE_DAY = 3
+CRAWLER_DAY = TODAY - datetime.timedelta(days=BEFORE_DAY)
+print('爬取日期: %s' % CRAWLER_DAY)
+
+# 宣告 my_ptt_crawler
+my_ptt_crawler = ptt_crawler()
+
+# 爬起來
+# my_ptt_crawler.parse_articles_by_date(TODAY, 'Gossiping')
