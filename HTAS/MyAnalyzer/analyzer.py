@@ -1,13 +1,16 @@
 import jieba
 import json
 import pandas as pd
+import os
 import re
+import datetime
 import numpy as np
 
 class Analyzer():
 
     def __init__(self, *args, **kwargs):
         pass
+        # print(self.data_path)
         # jieba.set_dictionary('HTAS/MyAnalyzer/dict.txt.big')
         # jieba.add_word('拉抬')
         # jieba.add_word('人渣文本')
@@ -25,16 +28,19 @@ class Analyzer():
         #         self.stopWords.append(stop)
 
     @staticmethod
-    def read_ptt_json(url_json):
-        read_file = open(url_json, 'r')
-        data = json.load(read_file)  # dict
-        read_file.close()
+    def read_ptt_json(url_data, start_date, end_date):
+        data = []
+        for filename in os.listdir(url_data):
+            if start_date <= datetime.datetime.strptime(re.split('\(|\)', filename)[1], '%Y-%m-%d') <= end_date:
+                read_file = open(url_data+filename, 'r', encoding='utf-8')
+                data.append(json.load(read_file))
+                read_file.close()
         return data
 
-    @staticmethod
-    def cut(text, is_cut_all=False, is_HMM=True):
-        seg_list = jieba.cut(text, cut_all=is_cut_all, HMM=is_HMM)
-        return seg_list
+    # @staticmethod
+    # def cut(text, is_cut_all=False, is_HMM=True):
+    #     seg_list = jieba.cut(text, cut_all=is_cut_all, HMM=is_HMM)
+    #     return seg_list
 
     # def analysis_articles(self, data):
     #     titles = []
@@ -66,3 +72,9 @@ class Analyzer():
     #     df['Vec'] = df['TF'] = df['IDF'] = np.nan
         
     #     return df, titles, contents, totalLen
+
+# ------------------------------------------------------------test------------------------------------------------------------
+if __name__ == '__main__':
+    start_date = datetime.datetime.strptime('2019-08-01', '%Y-%m-%d')
+    end_date = datetime.datetime.strptime('2019-08-20', '%Y-%m-%d')
+    data = Analyzer.read_ptt_json(url_data=os.getcwd()+'./HTAS/Data/', start_date=start_date, end_date=end_date)
