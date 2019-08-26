@@ -7,6 +7,7 @@ import numpy as np
 class Analyzer():
 
     def __init__(self, *args, **kwargs):
+        pass
         # jieba.set_dictionary('HTAS/MyAnalyzer/dict.txt.big')
         # jieba.add_word('拉抬')
         # jieba.add_word('人渣文本')

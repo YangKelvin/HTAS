@@ -53,9 +53,13 @@ class PttWebCrawler():
         self.store(filename, u']}', 'a')
         return filename
 
-    def parse_articles_by_date(self, target_day, board, path='.', timeout=3):
+    def parse_articles_by_date(self, target_day, board, path='./HTAS/Data', timeout=3):
         # 取得看板的 index
         url_index = self.PTT_URL + '/bbs/' + board + '/index.html'
+
+        # 如果 Data 資料夾不存在，則建立
+        if not os.path.exists(path):
+            os.makedirs(path)
 
         # 設定 filename
         filename = board + '(' + str(target_day) + ').json'
