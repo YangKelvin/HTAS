@@ -28,11 +28,11 @@ class Analyzer():
         #         self.stopWords.append(stop)
 
     @staticmethod
-    def read_ptt_json(url_data, start_date, end_date):
+    def read_ptt_json(data_path, start_date, end_date):
         data = []
-        for filename in os.listdir(url_data):
+        for filename in os.listdir(data_path):
             if start_date <= datetime.datetime.strptime(re.split('\(|\)', filename)[1], '%Y-%m-%d') <= end_date:
-                read_file = open(url_data+filename, 'r', encoding='utf-8')
+                read_file = open(data_path+filename, 'r', encoding='utf-8')
                 data.append(json.load(read_file))
                 read_file.close()
         return data
@@ -77,4 +77,6 @@ class Analyzer():
 if __name__ == '__main__':
     start_date = datetime.datetime.strptime('2019-08-01', '%Y-%m-%d')
     end_date = datetime.datetime.strptime('2019-08-20', '%Y-%m-%d')
-    data = Analyzer.read_ptt_json(url_data=os.getcwd()+'./HTAS/Data/', start_date=start_date, end_date=end_date)
+    data = Analyzer.read_ptt_json(data_path=os.getcwd()+'./HTAS/Data/', start_date=start_date, end_date=end_date)
+    for i in range(20):
+        print(data[i]['articles'][i]['article_title'])
