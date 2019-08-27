@@ -29,12 +29,23 @@ class Analyzer():
 
     @staticmethod
     def read_ptt_json(data_path, start_date, end_date):
-        data = []
+        data = pd.DataFrame(columns=['message_count', 'url', 'positive', 'neutral', 'negative'])
+        url = []
+        message_count = []
         for filename in os.listdir(data_path):
             if start_date <= datetime.datetime.strptime(re.split('\(|\)', filename)[1], '%Y-%m-%d') <= end_date:
-                read_file = open(data_path+filename, 'r', encoding='utf-8')
-                data.append(json.load(read_file))
-                read_file.close()
+                with open(data_path+filename, 'r', encoding='utf-8') as read_file:
+                    read_file = json.load(read_file)
+                    for i in range(len(read_file['articles'])):
+                        url.append(read_file['articles'][i]['url'])
+                        message_count.append(read_file['articles'][i]['message_count']['all'])
+        data['message_count'] = message_count
+        data['url'] = url
+        data['positive'] = np.NAN
+        data['neutral'] = np.NAN
+        data['negative'] = np.NAN
+        data.set_index(keys='message_count', inplace=True)
+        data.sort_values(by=['message_count'], inplace=True, ascending=False)
         return data
 
     # @staticmethod
@@ -78,5 +89,4 @@ if __name__ == '__main__':
     start_date = datetime.datetime.strptime('2019-08-01', '%Y-%m-%d')
     end_date = datetime.datetime.strptime('2019-08-20', '%Y-%m-%d')
     data = Analyzer.read_ptt_json(data_path=os.getcwd()+'./HTAS/Data/', start_date=start_date, end_date=end_date)
-    for i in range(20):
-        print(data[i]['articles'][i]['article_title'])
+    print(data.head(20))
