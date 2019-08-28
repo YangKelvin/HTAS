@@ -29,7 +29,8 @@ class Analyzer():
 
     @staticmethod
     def read_ptt_json(data_path, start_date, end_date):
-        data = pd.DataFrame(columns=['message_count', 'url', 'positive', 'neutral', 'negative'])
+        data = pd.DataFrame(columns=['ID', 'message_count', 'url', 'positive', 'neutral', 'negative'])
+        id = []
         url = []
         message_count = []
         for filename in os.listdir(data_path):
@@ -37,14 +38,16 @@ class Analyzer():
                 with open(data_path+filename, 'r', encoding='utf-8') as read_file:
                     read_file = json.load(read_file)
                     for i in range(len(read_file['articles'])):
+                        id.append(read_file['articles'][i]['article_id'])
                         url.append(read_file['articles'][i]['url'])
                         message_count.append(read_file['articles'][i]['message_count']['all'])
+        data['ID'] = id
         data['message_count'] = message_count
         data['url'] = url
         data['positive'] = np.NAN
         data['neutral'] = np.NAN
         data['negative'] = np.NAN
-        data.set_index(keys='message_count', inplace=True)
+        data.set_index(keys='ID', inplace=True)
         data.sort_values(by=['message_count'], inplace=True, ascending=False)
         return data
 
