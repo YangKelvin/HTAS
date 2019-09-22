@@ -1,19 +1,31 @@
 from MyAnalyzer.analyzer import Analyzer as ptt_analyzer
 import json
 import jieba
+import os
 from collections import defaultdict
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.svm import LinearSVC
 
-# 取得欲分析的 json 檔案
-DATA_LAYER = './HTAS/data/'
-BOARD = 'PC_Shopping'
-DATE = '2019-08-27'
-JSON_FILE_NAME = BOARD + '(' + DATE + ').json'
-FILE_PATH =DATA_LAYER + JSON_FILE_NAME
+PROJECT_PATH = os.getcwd() + r'./HTAS'
+# 將 jieba 的辭庫改為繁體中文
+jieba.set_dictionary(PROJECT_PATH + r'./MyAnalyzer/dict.txt.big')
+# 載入停用辭庫
+stop_words = []
+with open(PROJECT_PATH + r'./MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
+    for stop in stop_file.readlines():
+        stop = stop.strip()
+        stop_words.append(stop)
 
-# 打開該 json 檔
-posts = {}
-with open(FILE_PATH, 'r', encoding='utf-8') as read_file:
-    posts = json.load(read_file)['articles']
+# 取得欲分析的 json 資料夾
+DATA_LAYER = PROJECT_PATH + r'./DataForML/'
+BOARD = 'MobileComm'
+
+# 打開該資料夾底下的 json 檔
+posts = []
+for file_name in os.listdir(DATA_LAYER):
+    with open(DATA_LAYER + file_name, 'r', encoding='utf-8') as read_file:
+        posts += json.load(read_file)['articles']
 
 # 搜集每篇文章的詞，並記錄文章推文數
 words = []
@@ -27,7 +39,8 @@ for post in posts:  # 取得每篇文章
         # print(l)
         if l:
             for w in jieba.cut(l):
-                d[w] += 1
+                if w not in stop_words:
+                    d[w] += 1
         if len(d) > 0:
             words.append(d)
             scores.append(1 if score > 0 else 0)
@@ -51,14 +64,12 @@ for post in posts:
         if l and message_score != 0:
             d = defaultdict(int)
             for w in jieba.cut(l):
-                d[w] += 1
+                if w not in stop_words:
+                    d[w] += 1
             if len(d) > 0:
                 c_scores.append(1 if message_score > 0 else 0)
                 c_words.append(d)
 
-from sklearn.feature_extraction import DictVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.svm import LinearSVC
 
 # convert to vectors
 dvec = DictVectorizer()

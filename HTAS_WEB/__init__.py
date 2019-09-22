@@ -29,7 +29,7 @@ def create_app(test_config=None):
     from . import user
     app.register_blueprint(user.bp)
 
-    @app.route('/index')
+    @app.route('/')
     def index():
         return render_template('index.html')
     
