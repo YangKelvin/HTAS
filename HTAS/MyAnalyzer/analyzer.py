@@ -88,6 +88,44 @@ class Analyzer():
         
     #     return df, titles, contents, totalLen
 
+    # add by kelvin
+    ''' 計算每篇文章的推文、虛文、中立的數目，並回傳一個 dict '''
+    def analysis_article_push(self, article):
+        positive = 0
+        negative = 0
+        neutral = 0
+        total_count = 0
+
+        messages = article['messages']
+        for message in messages:
+            status = message['push_tag']
+            if (status == '推'):
+                positive += 1
+            elif (status == '噓'):
+                negative += 1
+            else:
+                neutral += 1
+            total_count += 1
+
+        result = {
+            'title': article['article_title'],
+            'message':{
+                'count': total_count,
+                'positive': positive,
+                'negative': negative,
+                'neutral': neutral
+            }
+        }
+        
+        return result
+        
+
+
+    '''分析一則訊息'''
+    def analysis_message(message):
+        # 將訊息利用 jieba 切字
+        pass
+
 # ------------------------------------------------------------test------------------------------------------------------------
 if __name__ == '__main__':
     start_date = datetime.datetime.strptime('2019-08-01', '%Y-%m-%d')
