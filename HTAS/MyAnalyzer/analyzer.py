@@ -2,11 +2,13 @@ import jieba
 import json
 import pandas as pd
 import os
+from os.path import isfile
 import re
 import datetime
 import numpy as np
 
 class Analyzer():
+    DATA_LAYER = './HTAS/data/Data/'
 
     def __init__(self, *args, **kwargs):
         pass
@@ -88,8 +90,38 @@ class Analyzer():
     #     return df, titles, contents, totalLen
 
     # add by kelvin
+    # ---------------------------------------------------------
+    ''' 取得分析資料 '''
+    ''' 取得資料夾下的檔案並讀取，然後將資料加到 data '''
+    def get_analysis_data(self, boarder_name, start_date, end_date):
+        target_file = ''
+        current_date = start_date
+        data = []
+
+        while (True):
+            # 判斷日期是否為最後一天
+            if (current_date == end_date):
+                break
+            # 取得檔案路徑
+            target_file = self.DATA_LAYER  + boarder_name + '(' +  str(current_date) +  ').json' 
+
+            # 判斷檔案是否存在
+            if (isfile(target_file)):
+                # 將檔案讀近來並加到 data 
+                append_data = self.get_data_from_file(target_file)
+                self.merge_dict(data, append_data)
+            else:
+                not_exist_file_name = boarder_name + '(' +  str(current_date) +  ').json'
+                print('檔案 %s 不存在' % not_exist_file_name)
+
+            # 取得明天日期
+            current_date += datetime.timedelta(days=1)
+        
+        return data
+
     ''' 計算每篇文章的推文、虛文、中立的數目，並回傳一個 dict '''
-    def analysis_article_push(self, article):
+    @staticmethod
+    def analysis_article_push(article):
         positive = 0
         negative = 0
         neutral = 0
@@ -118,12 +150,27 @@ class Analyzer():
         
         return result
         
+    ''' 取得檔案中的資料 '''
+    @staticmethod
+    def get_data_from_file(file_path):
+        posts = {}
+        with open(file_path, 'r', encoding='utf-8') as read_file:
+            posts = json.load(read_file)['articles']
+        
+        return posts
+    
+    ''' 合併兩個 dict '''
+    @staticmethod
+    def merge_dict(target, source):
+        for item in source:
+            target.append(item)
 
 
-    '''分析一則訊息'''
+    ''' TODO: 分析一則訊息 '''
     def analysis_message(message):
         # 將訊息利用 jieba 切字
         pass
+    # ---------------------------------------------------------
 
 # ------------------------------------------------------------test------------------------------------------------------------
 if __name__ == '__main__':
