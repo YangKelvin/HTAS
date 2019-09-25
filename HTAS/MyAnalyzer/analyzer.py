@@ -6,28 +6,28 @@ from os.path import isfile
 import re
 import datetime
 import numpy as np
+from collections import defaultdict
 
 class Analyzer():
     DATA_LAYER = './HTAS/data/Data/'
 
     def __init__(self, *args, **kwargs):
-        pass
         # print(self.data_path)
-        # jieba.set_dictionary('HTAS/MyAnalyzer/dict.txt.big')
-        # jieba.add_word('拉抬')
-        # jieba.add_word('人渣文本')
-        # jieba.add_word('自經區')
-        # jieba.add_word('CNN')
-        # jieba.add_word('NCC')
-        # jieba.add_word('懶人包')
-        # jieba.add_word('FB')
-        # jieba.add_word('fb')
+        jieba.set_dictionary('HTAS/MyAnalyzer/dict.txt.big')
+        jieba.add_word('拉抬')
+        jieba.add_word('人渣文本')
+        jieba.add_word('自經區')
+        jieba.add_word('CNN')
+        jieba.add_word('NCC')
+        jieba.add_word('懶人包')
+        jieba.add_word('FB')
+        jieba.add_word('fb')
 
-        # self.stopWords = []
-        # with open('HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
-        #     for stop in stop_file.readlines():
-        #         stop = stop.strip()
-        #         self.stopWords.append(stop)
+        self.stopWords = []
+        with open('HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
+            for stop in stop_file.readlines():
+                stop = stop.strip()
+                self.stopWords.append(stop)
 
     @staticmethod
     def read_ptt_json(data_path, start_date, end_date):
@@ -167,9 +167,26 @@ class Analyzer():
 
 
     ''' TODO: 分析一則訊息 '''
-    def analysis_message(message):
+    def analysis_message(self, message):
         # 將訊息利用 jieba 切字
+        d = defaultdict(int)
+
         pass
+
+    ''' 利用 jieba 切詞 '''
+    def jieba_cut(self, content):
+        d = defaultdict(int)
+        for l in content.split('\n'):
+            if l:
+                words = jieba.cut(content, cut_all=False)
+                words = list(filter(lambda t: t not in self.stopWords and t != ' ' and t != '\u3000', words))
+                for w in words:
+                    d[w] += 1
+            # if len(d) > 0:
+            #     words.append(d)
+            #     scores.append(1 if score > 0 else 0)
+        
+        return d
     # ---------------------------------------------------------
 
 # ------------------------------------------------------------test------------------------------------------------------------
