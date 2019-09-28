@@ -2,7 +2,7 @@ import datetime
 from PttWebCrawler.crawler import PttWebCrawler as ptt_crawler
 
 # 設定看板
-BOARD = 'PC_Shopping'
+BOARD = 'MobileComm'
 # BOARD = 'Gossiping'
 
 print('start my crawler...\n')
