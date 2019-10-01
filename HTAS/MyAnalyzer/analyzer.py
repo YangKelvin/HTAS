@@ -35,6 +35,9 @@ class Analyzer():
         id = []
         url = []
         message_count = []
+        push = []
+        neutral = []
+        boo = []
         for filename in os.listdir(data_path):
             if start_date <= datetime.datetime.strptime(re.split('\(|\)', filename)[1], '%Y-%m-%d') <= end_date:
                 with open(data_path+filename, 'r', encoding='utf-8') as read_file:
@@ -44,12 +47,15 @@ class Analyzer():
                             id.append(read_file['articles'][i]['article_id'])
                             url.append(read_file['articles'][i]['url'])
                             message_count.append(read_file['articles'][i]['message_count']['all'])
+                            push.append(read_file['articles'][i]['message_count']['push'])
+                            neutral.append(read_file['articles'][i]['message_count']['neutral'])
+                            boo.append(read_file['articles'][i]['message_count']['boo'])
         data['ID'] = id
         data['message_count'] = message_count
         data['url'] = url
-        data['positive'] = np.NAN
-        data['neutral'] = np.NAN
-        data['negative'] = np.NAN
+        data['positive'] = push
+        data['neutral'] = neutral
+        data['negative'] = boo
         data.set_index(keys='ID', inplace=True)
         data.sort_values(by=['message_count'], inplace=True, ascending=False)
         return data
