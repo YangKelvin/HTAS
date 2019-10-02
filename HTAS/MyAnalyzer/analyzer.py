@@ -44,13 +44,14 @@ class Analyzer():
                 with open(data_path+filename, 'r', encoding='utf-8') as read_file:
                     read_file = json.load(read_file)
                     for i in range(len(read_file['articles'])):
-                        id.append(read_file['articles'][i]['article_id'])
-                        title.append(read_file['articles'][i]['article_title'])
-                        url.append(read_file['articles'][i]['url'])
-                        message_count.append(read_file['articles'][i]['message_count']['all'])
-                        push.append(read_file['articles'][i]['message_count']['push'])
-                        boo.append(read_file['articles'][i]['message_count']['boo'])
-                        neutral.append(read_file['articles'][i]['message_count']['neutral'])
+                        if (read_file['articles'][i].get('article_id')):
+                            id.append(read_file['articles'][i]['article_id'])
+                            title.append(read_file['articles'][i]['article_title'])
+                            url.append(read_file['articles'][i]['url'])
+                            message_count.append(read_file['articles'][i]['message_count']['all'])
+                            push.append(read_file['articles'][i]['message_count']['push'])
+                            boo.append(read_file['articles'][i]['message_count']['boo'])
+                            neutral.append(read_file['articles'][i]['message_count']['neutral'])
                         
 
         data['ID'] = id
