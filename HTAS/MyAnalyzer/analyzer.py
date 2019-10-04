@@ -53,7 +53,6 @@ class Analyzer():
                             boo.append(read_file['articles'][i]['message_count']['boo'])
                             neutral.append(read_file['articles'][i]['message_count']['neutral'])
                         
-
         data['ID'] = id
         data['title'] = title
         data['message_count'] = message_count
