@@ -25,50 +25,55 @@ BOARD = 'MobileComm'
 posts = []
 for file_name in os.listdir(DATA_LAYER):
     with open(DATA_LAYER + file_name, 'r', encoding='utf-8') as read_file:
-        posts += json.load(read_file)['articles']
+        try:
+            posts += json.load(read_file)['articles']
+        except Exception:
+            print('file data error : {}'.format(DATA_LAYER + file_name))
 
 # 搜集每篇文章的詞，並記錄文章推文數
 words = []
 scores = []
 for post in posts:  # 取得每篇文章
-    d = defaultdict(int)
-    content = post['content']
-    message_count = post['message_count']
-    score = message_count['push'] - message_count['boo']
-    for l in content.split('\n'):
-        # print(l)
-        if l:
-            for w in jieba.cut(l):
-                if w not in stop_words:
-                    d[w] += 1
-        if len(d) > 0:
-            words.append(d)
-            scores.append(1 if score > 0 else 0)
+    if (post.get('article_id')):
+        d = defaultdict(int)
+        content = post['content']
+        message_count = post['message_count']
+        score = message_count['push'] - message_count['boo']
+        for l in content.split('\n'):
+            # print(l)
+            if l:
+                for w in jieba.cut(l):
+                    if w not in stop_words:
+                        d[w] += 1
+            if len(d) > 0:
+                words.append(d)
+                scores.append(1 if score > 0 else 0)
 
 # 分析每篇文章下的回覆
 c_words = []
 c_scores = []
 for post in posts:
-    for message in post['messages']:
-        l = message['push_content'].strip()
-        
-        # 取得留言的狀況
-        message_score = 0
-        push_tag = message['push_tag']
-        if (push_tag == '推'):
-            message_score = 1
-        elif (push_tag == '噓'):
-            message_score = -1
-        
-        # 若推文狀況不為 neutral
-        if l and message_score != 0:
-            d = defaultdict(int)
-            for w in jieba.cut(l):
-                if w not in stop_words:
-                    d[w] += 1
-            if len(d) > 0:
-                c_scores.append(1 if message_score > 0 else 0)
-                c_words.append(d)
+    if (post.get('article_id')):
+        for message in post['messages']:
+            l = message['push_content'].strip()
+            
+            # 取得留言的狀況
+            message_score = 0
+            push_tag = message['push_tag']
+            if (push_tag == '推'):
+                message_score = 1
+            elif (push_tag == '噓'):
+                message_score = -1
+            
+            # 若推文狀況不為 neutral
+            if l and message_score != 0:
+                d = defaultdict(int)
+                for w in jieba.cut(l):
+                    if w not in stop_words:
+                        d[w] += 1
+                if len(d) > 0:
+                    c_scores.append(1 if message_score > 0 else 0)
+                    c_words.append(d)
 
 
 # convert to vectors

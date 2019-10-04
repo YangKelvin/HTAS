@@ -9,7 +9,7 @@ import numpy as np
 from collections import defaultdict
 
 class Analyzer():
-    DATA_LAYER = './HTAS/data/Data/'
+    DATA_LAYER = './HTAS/Data/'
 
     def __init__(self, *args, **kwargs):
         # print(self.data_path)
