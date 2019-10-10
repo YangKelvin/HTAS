@@ -112,7 +112,7 @@ def display_top_features(weights, names, top_n, select=abs):
     # ax.set_xticklabels(top_names, rotation=45, fontsize=12, fontdict={'fontname': 'Droid Sans Fallback', 'fontsize':12})
 
 # 貼文負向詞彙
-display_top_features(svc.coef_[0], dvec.get_feature_names(), 5)
+display_top_features(svc.coef_[0], dvec.get_feature_names(), 30)
 
 # 貼文正向詞彙
-display_top_features(svc.coef_[0], dvec.get_feature_names(), 5 , select=lambda x: x)
+display_top_features(svc.coef_[0], dvec.get_feature_names(), 30, select=lambda x: x)

@@ -57,7 +57,7 @@ def get_fate_data():
 
 # 取得資料
 def get_data(date_start, date_end):
-    path = os.getcwd() + '/HTAS/data/Data/'
+    path = os.getcwd() + '/../HTAS/Data/'
     data = analyzer.read_ptt_json(path, date_start, date_end)
     result = []
     # print(data)
