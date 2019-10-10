@@ -16,7 +16,7 @@ class Analyzer():
 
     def __init__(self, *args, **kwargs):
         # print(self.data_path)
-        jieba.set_dictionary('HTAS/MyAnalyzer/dict.txt.big')
+        jieba.set_dictionary(os.getcwd() + r'/../HTAS/MyAnalyzer/dict.txt.big')
         jieba.add_word('拉抬')
         jieba.add_word('人渣文本')
         jieba.add_word('自經區')
@@ -26,8 +26,8 @@ class Analyzer():
         jieba.add_word('FB')
         jieba.add_word('fb')
 
-        self.stop_words = []
-        with open('HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
+        self.stopWords = []
+        with open(os.getcwd() + r'/../HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
             for stop in stop_file.readlines():
                 stop = stop.strip()
                 self.stop_words.append(stop)
