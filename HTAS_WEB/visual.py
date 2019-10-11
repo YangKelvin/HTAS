@@ -6,12 +6,11 @@ from werkzeug.exceptions import abort
 from HTAS_WEB.db import get_db
 # from bokeh.plotting import figure, output_file, show
 import chartkick
-from HTAS.MyAnalyzer.analyzer import Analyzer
+from HTAS.api import *
 import datetime
 import os
 
 bp = Blueprint('visual', __name__, url_prefix='/visual')
-analyzer = Analyzer()
 
 DATE_START = datetime.datetime(2019, 8, 30)
 DATE_END = datetime.datetime(2019, 8, 31)
@@ -25,7 +24,12 @@ def test_bar():
 # 分析畫面
 @bp.route('/analysis', methods=('GET', 'POST'))
 def analysis():
-    data = get_data(DATE_START, DATE_END)
+    # tmp = get_word_vector()
+    data_count = 3
+    if (request.method == 'GET'):
+        data = get_ptt_data(DATE_START, DATE_END)
+        return render_template('visual/analysis.html', posts=data[:data_count])
+
     if (request.method == 'POST'):
         # 取得表單上資料
         date_start = request.form['datepicker-start']   # 起始日期
@@ -35,10 +39,18 @@ def analysis():
         date_start = datetime.datetime.strptime(str(date_start), '%Y-%m-%d')    
         date_end = datetime.datetime.strptime(str(date_end), '%Y-%m-%d')
         # 取得資料
-        data = get_data(date_start, date_end)
+        data = get_ptt_data(date_start, date_end)
         return render_template('visual/analysis.html', posts=data[:data_count])
 
-    return render_template('visual/analysis.html', posts=data[:3])
+# 貼文和回覆的詞分數
+@bp.route('/word_vec', methods=('GET', 'POST'))
+def word_vec():
+    article_pos = get_word_vector(DATA_VEC_LEN, 'ap')
+    article_neg = get_word_vector(DATA_VEC_LEN, 'an')
+    message_pos = get_word_vector(DATA_VEC_LEN, 'mp')
+    message_neg = get_word_vector(DATA_VEC_LEN, 'mn')
+
+    return render_template('visual/word_vec.html', ap=article_pos, an=article_neg, mp = message_pos, mn = message_neg)
 
 # 取得假資料
 def get_fate_data():
@@ -54,22 +66,3 @@ def get_fate_data():
     fake_data.append(data3)
 
     return fake_data
-
-# 取得資料
-def get_data(date_start, date_end):
-    path = os.getcwd() + '/HTAS/data/Data/'
-    data = analyzer.read_ptt_json(path, date_start, date_end)
-    result = []
-    # print(data)
-    for index, row in data.iterrows():
-        tmp = {
-            'title': row['title'], 
-            'data':{ 
-                'positive': row['positive'],
-                'neutral' : row['neutral'],
-                'negative': row['negative']
-            }
-        }
-        result.append(tmp)
-    return result
-

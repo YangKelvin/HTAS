@@ -7,6 +7,9 @@ import re
 import datetime
 import numpy as np
 from collections import defaultdict
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.svm import LinearSVC
 
 class Analyzer():
     DATA_LAYER = './HTAS/Data/'
@@ -23,11 +26,11 @@ class Analyzer():
         jieba.add_word('FB')
         jieba.add_word('fb')
 
-        self.stopWords = []
+        self.stop_words = []
         with open('HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
             for stop in stop_file.readlines():
                 stop = stop.strip()
-                self.stopWords.append(stop)
+                self.stop_words.append(stop)
 
     @staticmethod
     def read_ptt_json(data_path, start_date, end_date):
@@ -131,7 +134,7 @@ class Analyzer():
         
         return data
 
-    ''' 計算每篇文章的推文、虛文、中立的數目，並回傳一個 dict '''
+    ''' 計算每篇文章的推文、虛文、中立的數目，並回傳一個 dict(沒用到) '''
     @staticmethod
     def analysis_article_push(article):
         positive = 0
@@ -168,22 +171,28 @@ class Analyzer():
         posts = {}
         with open(file_path, 'r', encoding='utf-8') as read_file:
             posts = json.load(read_file)['articles']
-        
+
         return posts
     
+    ''' 取得該目錄下所有檔案中的資料 '''
+    ''' data_layer: os.getcwd() + '/HTAS/Data/DataForML/' '''
+    @staticmethod
+    def get_data_by_directory(data_layer):
+        posts = []
+        for file_name in os.listdir(data_layer):
+            with open(data_layer + file_name, 'r', encoding='utf-8') as read_file:
+                try:
+                    posts += json.load(read_file)['articles']
+                except Exception:
+                    pass
+                    # print('file data error : {}'.format(data_layer + file_name))
+        return posts
+
     ''' 合併兩個 dict '''
     @staticmethod
     def merge_dict(target, source):
         for item in source:
             target.append(item)
-
-
-    ''' TODO: 分析一則訊息 '''
-    def analysis_message(self, message):
-        # 將訊息利用 jieba 切字
-        d = defaultdict(int)
-
-        pass
 
     ''' 利用 jieba 切詞 '''
     def jieba_cut(self, content):
@@ -199,6 +208,88 @@ class Analyzer():
             #     scores.append(1 if score > 0 else 0)
         
         return d
+
+    ''' 計算詞向量 '''
+    ''' data_path: 為分析資料的目錄 '''
+    def get_word_vector(self, data_layer):
+        # 取得該目錄下所有檔案中的資料
+        data = self.get_data_by_directory(data_layer)
+
+        # 蒐集每篇文章的詞，並記錄推文數、分析每篇文章下的回覆
+        words, scores, c_words, c_scores = self.get_article_words_and_scrores(data)
+
+        # convert to vectors
+        dvec = DictVectorizer()
+        tfidf = TfidfTransformer()
+        X = tfidf.fit_transform(dvec.fit_transform(words))
+
+        c_dvec = DictVectorizer()
+        c_tfidf = TfidfTransformer()
+        c_X = c_tfidf.fit_transform(c_dvec.fit_transform(c_words))
+
+        svc = LinearSVC()
+        svc.fit(X, scores)
+
+        c_svc = LinearSVC()
+        c_svc.fit(c_X, c_scores)
+        return svc, c_svc, dvec, c_dvec
+    
+    ''' 機器學習 '''
+    ''' 蒐集每篇文章的詞，並記錄推文分數 '''
+    @staticmethod
+    def get_article_words_and_scrores(posts):
+        # 取得 stop_words
+        stop_words = []
+        with open('HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
+            for stop in stop_file.readlines():
+                stop = stop.strip()
+                stop_words.append(stop)
+            
+        words = []
+        scores = []
+        c_words = []
+        c_scores = []
+        for post in posts:
+            if (post.get('article_id')):    # 確定文章存在
+                # 取得文章的詞和分數
+                # ------------------------------------
+                d1 = defaultdict(int)
+                content = post['content']
+                message_count = post['message_count']
+                score = message_count['push'] - message_count['boo']
+                for l in content.split('\n'):
+                    # print(l)
+                    if l:
+                        for w in jieba.cut(l):
+                            if w not in stop_words:
+                                d1[w] += 1
+                    if len(d1) > 0:
+                        words.append(d1)
+                        scores.append(1 if score > 0 else 0)
+                # ------------------------------------
+                # 取得文章下的留言詞和分數
+                # ------------------------------------
+                for message in post['messages']:
+                    l = message['push_content'].strip()
+                    # 取得留言的狀況
+                    message_score = 0
+                    push_tag = message['push_tag']
+                    if (push_tag == '推'):
+                        message_score = 1
+                    elif (push_tag == '噓'):
+                        message_score = -1
+                    # 若推文狀況不為 neutral
+                    if l and message_score != 0:
+                        d2 = defaultdict(int)
+                        for w in jieba.cut(l):
+                            if w not in stop_words:
+                                d2[w] += 1
+                        if len(d2) > 0:
+                            c_scores.append(1 if message_score > 0 else 0)
+                            c_words.append(d2)
+                # ------------------------------------
+        return words, scores, c_words, c_scores
+
     # ---------------------------------------------------------
 
 # ------------------------------------------------------------test------------------------------------------------------------

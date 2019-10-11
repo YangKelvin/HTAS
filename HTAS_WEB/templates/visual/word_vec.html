@@ -22,30 +22,15 @@
 {% block content %}
 <div class="container-fluid row my-2 col-10 offset-1 mb-5 mt-4">
     <div class="container-fluid my-2">
-        <div class="container-fluid m-0 p-0 font-color-white row align-items-center justify-content-between">
-            <form method="post" class="form-inline my-2 my-lg-0" action="{{ url_for('visual.analysis')}}">          
-                <p class="font-weight-bold mb-0 font-size-16 align-self-end">分析結果 - Analysis Result</p>
-                <p>取得資料筆數：<input type="text" id="data-count" name="data-count"></p>
-                <p>開始日期：<input type="text" id="datepicker-start" name="datepicker-start"></p>
-                <p>結束日期：<input type="text" id="datepicker-end" name="datepicker-end"></p>
-                <button class="btn search-btn my-2 my-sm-0" type="submit">搜尋</button>
-            </form>
-        </div>
         <hr>
-        {% for post in posts %}
-            <div class="container-fluid row col-12 mx-0">
-                <div class="col-3 align-self-center">
-                    <img style="height: 100%; width: 100%" class="product-img" src="{{ url_for('static', filename='image/icon-ptt.png') }}" alt="Card image cap">
-                </div>
-                <div class="card-body col-9 mx-auto d-flex flex-column justify-content-between">
-                    <h5 class="card-title offset-1">{{ post['title'] }}</h5>
-                    <span class="about offset-1 row">
-                            {% pie_chart post['data']  %}
-                    </span>
-                </div>
-            </div>
-            <hr>
-        {% endfor %}
+        <h5 class="card-title offset-1">貼文正面詞彙</h5>
+        {% column_chart ap %}
+        <h5 class="card-title offset-1">貼文負面詞彙</h5>
+        {% column_chart an %}
+        <h5 class="card-title offset-1">留言正面詞彙</h5>
+        {% column_chart mp %}
+        <h5 class="card-title offset-1">留言負面詞彙</h5>
+        {% column_chart mn %}
     </div>
 </div>
 {% endblock %} 

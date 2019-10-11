@@ -1,39 +1,58 @@
-from MyAnalyzer.analyzer import Analyzer as ptt_analyzer
+from MyAnalyzer.analyzer import Analyzer
+from PttWebCrawler.crawler import PttWebCrawler
+from config import *
 import json
-import os
 
+analyzer = Analyzer()
+crawler = PttWebCrawler()
 
-# print(os.getcwd())
+# 分析結果
+svc, c_svc, dvec, c_dvec= analyzer.get_word_vector(ML_DATA_LAYER)
 
-analyzer = ptt_analyzer()
+# 儲存分析結果
+def store_MLResult(weights, names, file_name, select=abs):
+    top_features = sorted(zip(weights, names), key=lambda x: select(x[0]), reverse=True)[:]
+    top_weights = [x[0] for x in top_features]
+    top_names = [x[1] for x in top_features]
+    data_count = len(top_features)
+    datas = []
+    # print(len(top_features))
+    for i in range(data_count):
+        data = {
+            "name" : top_names[i],
+            "weights" : top_weights[i]
+        } 
+        datas.append(data)
+    with open(file_name, 'w') as file_object:
+        json.dump(datas, file_object)
 
-# 取得欲分析的 json 檔案
-DATA_LAYER = './HTAS/data/'
-BOARD = 'PC_Shopping'
-DATE = '2019-08-27'
-JSON_FILE_NAME = BOARD + '(' + DATE + ').json'
-FILE_PATH =DATA_LAYER + JSON_FILE_NAME
-# print(FILE_PATH)
+# 顯示分析結果
+def display_top_features(weights, names, top_n, select=abs):
+    top_features = sorted(zip(weights, names), key=lambda x: select(x[0]), reverse=True)[:top_n]
+    top_weights = [x[0] for x in top_features]
+    top_names = [x[1] for x in top_features]
 
-# 打開該 json 檔
-articles = {}
-with open(FILE_PATH, 'r', encoding='utf-8') as read_file:
-    articles = json.load(read_file)['articles']
+    print(top_features)
+    print(top_weights)
+    print(top_names)
 
-# print(articles[0]['messages'][0]) # 第一篇文章的第一個回覆
+# 儲存分析結果
+store_MLResult(svc.coef_[0], dvec.get_feature_names(), ROOT + '/HTAS/Data/article_positive.json', select=lambda x: x)
+store_MLResult(svc.coef_[0], dvec.get_feature_names(), ROOT + '/HTAS/Data/article_negative.json')
+store_MLResult(c_svc.coef_[0], c_dvec.get_feature_names(), ROOT + '/HTAS/Data/message_positive.json', select=lambda x: x)
+store_MLResult(c_svc.coef_[0], c_dvec.get_feature_names(), ROOT + '/HTAS/Data/message_negative.json')
 
-# 分析後的結果
-result = []
+# 貼文負向詞彙
+# display_top_features(svc.coef_[0], dvec.get_feature_names(), 5)
+# print('------------------------------------')
 
-# 試著分析第一篇文章
-# article = articles[1]
-# tmp_result = analyzer.analysis_article_push(article)
+# 貼文正向詞彙
+# display_top_features(svc.coef_[0], dvec.get_feature_names(), 5 , select=lambda x: x)
+# print('------------------------------------')
 
-# result.append(tmp_result)
+# 留言正向詞彙
+# display_top_features(c_svc.coef_[0], c_dvec.get_feature_names(), 5)
+# print('------------------------------------') 
 
-for article in articles:
-    result.append(analyzer.analysis_article_push(article))
-
-
-print(result[0])
-print(articles[0]["message_count"])
+# 留言負向詞彙
+# display_top_features(c_svc.coef_[0], c_dvec.get_feature_names(), 5, select=lambda x: x)
