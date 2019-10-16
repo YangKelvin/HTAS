@@ -10,13 +10,14 @@ from collections import defaultdict
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import LinearSVC
+from HTAS.config import *
 
 class Analyzer():
     DATA_LAYER = './HTAS/Data/'
 
     def __init__(self, *args, **kwargs):
         # print(self.data_path)
-        jieba.set_dictionary(os.getcwd() + r'/../HTAS/MyAnalyzer/dict.txt.big')
+        jieba.set_dictionary(ROOT + r'/../HTAS/MyAnalyzer/dict.txt.big')
         jieba.add_word('拉抬')
         jieba.add_word('人渣文本')
         jieba.add_word('自經區')
@@ -27,10 +28,10 @@ class Analyzer():
         jieba.add_word('fb')
 
         self.stopWords = []
-        with open(os.getcwd() + r'/../HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
+        with open(ROOT + r'/../HTAS/MyAnalyzer/stops.txt', 'r', encoding='utf-8') as stop_file:
             for stop in stop_file.readlines():
                 stop = stop.strip()
-                self.stop_words.append(stop)
+                self.stopWords.append(stop)
 
     @staticmethod
     def read_ptt_json(data_path, start_date, end_date):
@@ -45,16 +46,19 @@ class Analyzer():
         for filename in os.listdir(data_path):
             if start_date <= datetime.datetime.strptime(re.split('\(|\)', filename)[1], '%Y-%m-%d') <= end_date:
                 with open(data_path+filename, 'r', encoding='utf-8') as read_file:
-                    read_file = json.load(read_file)
-                    for i in range(len(read_file['articles'])):
-                        if (read_file['articles'][i].get('article_id')):
-                            id.append(read_file['articles'][i]['article_id'])
-                            title.append(read_file['articles'][i]['article_title'])
-                            url.append(read_file['articles'][i]['url'])
-                            message_count.append(read_file['articles'][i]['message_count']['all'])
-                            push.append(read_file['articles'][i]['message_count']['push'])
-                            boo.append(read_file['articles'][i]['message_count']['boo'])
-                            neutral.append(read_file['articles'][i]['message_count']['neutral'])
+                    try:
+                        read_file = json.load(read_file)
+                        for i in range(len(read_file['articles'])):
+                            if (read_file['articles'][i].get('article_id')):
+                                id.append(read_file['articles'][i]['article_id'])
+                                title.append(read_file['articles'][i]['article_title'])
+                                url.append(read_file['articles'][i]['url'])
+                                message_count.append(read_file['articles'][i]['message_count']['all'])
+                                push.append(read_file['articles'][i]['message_count']['push'])
+                                boo.append(read_file['articles'][i]['message_count']['boo'])
+                                neutral.append(read_file['articles'][i]['message_count']['neutral'])
+                    except ValueError:
+                        print(data_path+filename)
                         
         data['ID'] = id
         data['title'] = title
@@ -293,7 +297,7 @@ class Analyzer():
 
 # ------------------------------------------------------------test------------------------------------------------------------
 if __name__ == '__main__':
-    start_date = datetime.datetime.strptime('2019-08-01', '%Y-%m-%d')
-    end_date = datetime.datetime.strptime('2019-08-20', '%Y-%m-%d')
+    start_date = datetime.datetime.strptime('2016-07-21', '%Y-%m-%d')
+    end_date = datetime.datetime.strptime('2019-10-06', '%Y-%m-%d')
     data = Analyzer.read_ptt_json(data_path=os.getcwd()+'./HTAS/Data/', start_date=start_date, end_date=end_date)
     print(data.head(20))

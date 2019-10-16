@@ -12,6 +12,7 @@ def get_ptt_data(date_start, date_end):
     for index, row in data.iterrows():
         tmp = {
             'title': row['title'], 
+            'url': row['url'], 
             'data':{ 
                 'positive': row['positive'],
                 'neutral' : row['neutral'],

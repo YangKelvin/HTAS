@@ -1,6 +1,6 @@
 from MyAnalyzer.analyzer import Analyzer
 from PttWebCrawler.crawler import PttWebCrawler
-from config import *
+from HTAS.config import *
 import json
 
 analyzer = Analyzer()
